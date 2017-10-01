@@ -4,6 +4,9 @@ import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.test._
 import play.api.test.Helpers._
+import com.github.andyglow.websocket._
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.JsValue
 
 /**
  * Add your spec here.
@@ -11,35 +14,29 @@ import play.api.test.Helpers._
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class ApplicationControllerWebSocketSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class ApplicationControllerWebSocketSpec extends PlaySpec {
 
-  "HomeController GET" should {
+  "Application" should {
 
-    "render the index page from a new instance of controller" in {
-      val controller = new ApplicationController(stubControllerComponents())
-      val home = controller.index().apply(FakeRequest(GET, "/"))
+    "Test websocket" in {
+      lazy val port: Int = 31337
+      val app = new GuiceApplicationBuilder().build()
+      Helpers.running(TestServer(port, app)) {
 
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Welcome to Play")
+        val lobbyEndpointUrl = s"ws://localhost:$port/lobby"
+        println(lobbyEndpointUrl)
+        val cli = WebsocketClient[String](lobbyEndpointUrl) { case str =>
+          println(s"<<| $str")
+        }
+
+        // 4. open websocket
+        val ws = cli.open()
+
+        // 5. send messages
+        ws ! "{\n \"$type\": \"ping\",\n \"seq\": 1\n}"
+      }
     }
 
-    "render the index page from the application" in {
-      val controller = inject[ApplicationController]
-      val home = controller.index().apply(FakeRequest(GET, "/"))
-
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Welcome to Play")
-    }
-
-    "render the index page from the router" in {
-      val request = FakeRequest(GET, "/")
-      val home = route(app, request).get
-
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Welcome to Play")
-    }
   }
+
 }
