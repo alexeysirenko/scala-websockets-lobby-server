@@ -3,7 +3,7 @@ package controllers
 import java.net.URL
 import javax.inject._
 
-import actors.LobbyActor
+import actors.{AuthorizationActor, LobbyClientActor}
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import msg.LobbyMessage
@@ -21,13 +21,15 @@ import play.api.mvc._
 class ApplicationController @Inject()(cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer)
   extends AbstractController(cc) {
 
+  private val authorizationActor = system.actorOf(AuthorizationActor.props(), "authorization-actor")
+
   def index() = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.index())
   }
 
   def lobby: WebSocket = WebSocket.accept[JsValue, JsValue] { request =>
     ActorFlow.actorRef { out =>
-      LobbyActor.props(out)
+      LobbyClientActor.props(out, authorizationActor)
     }
   }
 
