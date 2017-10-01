@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import models.Table
-import messages._
+import message._
 
 class TablesActor extends Actor {
 
@@ -19,7 +19,7 @@ class TablesActor extends Actor {
     case AddTable(table) => addTable(table)
     case UpdateTable(table) => updateTable(table)
     case RemoveTable(id) => removeTable(id)
-    case _ => unhandled()
+    case any => unhandled(any)
   }
 
   private def subscribe(subscriber: ActorRef): Unit = {

@@ -6,7 +6,7 @@ import javax.inject._
 import actors.{AuthorizationActor, LobbyClientActor, TablesActor}
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import messages.LobbyMessage
+import message.LobbyMessage
 import play.api._
 import play.api.libs.json.JsValue
 import play.api.libs.streams.ActorFlow

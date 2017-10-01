@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import models.User
-import messages.{Login, LoginFailed, LoginSuccessful}
+import message.{Login, LoginFailed, LoginSuccessful}
 
 class AuthorizationActor extends Actor {
 
@@ -17,7 +17,7 @@ class AuthorizationActor extends Actor {
         case Some(user) => sender ! LoginSuccessful(user.role)
         case None => sender ! LoginFailed("Login and password does not match")
       }
-    case _ => unhandled()
+    case message => unhandled(message)
   }
 }
 

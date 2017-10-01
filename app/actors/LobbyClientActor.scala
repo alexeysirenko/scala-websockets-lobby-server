@@ -1,15 +1,12 @@
 package actors
 
 import akka.actor.{Actor, ActorRef, Props, Status}
-import akka.event.Logging
-import messages._
+import message._
 import play.api.libs.json.JsValue
 
 import scala.util.{Failure, Success}
 
 class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef) extends Actor {
-
-  val log = Logging(context.system, this)
 
   var userType: Option[String] = None
 
@@ -20,7 +17,7 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
   override def receive = {
     case msg: JsValue => receiveRawJson(msg)
     case msg: LobbyMessage => receiveLobbyMessage(msg)
-    case _ => unhandled()
+    case msg => unhandled(msg)
   }
 
   private def receiveRawJson(msg: JsValue): Unit = {
@@ -32,7 +29,7 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
           case SubscribeTables => tablesActor ! SubscribeTables
           case UnsubscribeTables => tablesActor ! UnsubscribeTables
           case msg: SecuredLobbyMessage => receiveSecuredLobbyMessage(msg)
-          case _ => unhandled()
+          case msg => unhandled(msg)
         }
       case Failure(e) => out ! Status.Failure(e)
     }
@@ -57,7 +54,7 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
         case msg @ RemoveTable(id) =>
           respondToClient(TableRemoved(id))
           tablesActor ! msg
-        case _ => unhandled()
+        case msg => unhandled(msg)
       }
     } else {
       respondToClient(NotAuthorized)
