@@ -4,13 +4,22 @@ import akka.actor.{Actor, ActorRef, Props}
 import models.Table
 import message._
 
+/**
+  * Handles tables management.
+  */
 class TablesActor extends Actor {
 
+  /**
+    * Tables list.
+    */
   protected val tables = scala.collection.mutable.Map(
     1 -> Table(Some(1), "table - James Bond", 7),
     2 -> Table(Some(2), "table - Mission Impossible", 4)
   )
 
+  /**
+    * List of active subscribers.
+    */
   protected val subscribers = scala.collection.mutable.Set[ActorRef]()
 
   override def receive = {
@@ -22,15 +31,27 @@ class TablesActor extends Actor {
     case any => unhandled(any)
   }
 
+  /**
+    * Adds a subscriber to the list. Returns a list of tables to sender.
+    * @param subscriber subscriber to add
+    */
   private def subscribe(subscriber: ActorRef): Unit = {
     subscribers.add(sender)
     sender ! TableList(tables.values.toList)
   }
 
+  /**
+    * Unsubscribes a subscriber from the list. Returns nothing to sender.
+    * @param subscriber subscriber to unsubscribe.
+    */
   private def unsubscribe(subscriber: ActorRef): Unit = {
     subscribers.remove(sender)
   }
 
+  /**
+    * Adds a table to the list.
+    * @param table to add
+    */
   private def addTable(table: Table): Unit = {
     val newTable =  table.withId(tables.size + 1)
     tables.put(newTable.id.get, newTable)
@@ -40,6 +61,10 @@ class TablesActor extends Actor {
     }
   }
 
+  /**
+    * Updates existing table.
+    * @param table table to update
+    */
   private def updateTable(table: Table): Unit = {
     table.id.map(id => tables.get(id)) match {
       case Some(_) =>
@@ -52,6 +77,10 @@ class TablesActor extends Actor {
     }
   }
 
+  /**
+    * Removes existing table.
+    * @param id id of a table to remove
+    */
   private def removeTable(id: Int): Unit = {
     tables.remove(id) match {
       case Some(_) =>

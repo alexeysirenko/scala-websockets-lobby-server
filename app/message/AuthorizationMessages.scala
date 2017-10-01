@@ -6,7 +6,6 @@ import play.api.libs.functional.syntax._
 case class Login(username: String, password: String) extends LobbyMessage
 case class LoginFailed(reason: String) extends LobbyMessage
 case class LoginSuccessful(userType: String) extends LobbyMessage
-
 case object NotAuthorized extends LobbyMessage {
   val msgType = "not_authorized"
 }

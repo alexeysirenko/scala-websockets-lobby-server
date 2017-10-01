@@ -8,6 +8,9 @@ import scala.util.{Failure, Success}
 
 class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef) extends Actor {
 
+  /**
+    * Role  of the current user (if authorized)
+    */
   var userType: Option[String] = None
 
   override def postStop(): Unit = {
@@ -20,6 +23,10 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
     case msg => unhandled(msg)
   }
 
+  /**
+    * Handles raw JSON input from the client.
+    * @param msg json
+    */
   private def receiveRawJson(msg: JsValue): Unit = {
     LobbyMessage.parseTypeField(msg) match {
       case Success(lobbyMessage) =>
@@ -35,6 +42,10 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
     }
   }
 
+  /**
+    * Handles responses from another actors.
+    * @param message LobbyMessage instance
+    */
   private def receiveLobbyMessage(message: LobbyMessage): Unit = {
     message match {
       case msg: LoginSuccessful =>
@@ -44,6 +55,10 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
     }
   }
 
+  /**
+    * Handles secured requests from the client.
+    * @param msg
+    */
   private def receiveSecuredLobbyMessage(msg: SecuredLobbyMessage): Unit = {
     if (isAdmin) {
       msg match {
@@ -61,13 +76,30 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
     }
   }
 
+  /**
+    * Responds to the remote client, serializes message to JSON.
+    * @param message message to respond with
+    */
   private def respondToClient(message: LobbyMessage): Unit = out ! message.toJson
 
+  /**
+    * Checks privileges of the current user.
+    * @return true if user has administration rights, returns false otherwise
+    */
   private def isAdmin = userType.contains("admin")
 
 }
 
 object LobbyClientActor {
+
+  /**
+    * Creates LobbyClientActor's props instance.
+    *
+    * @param out actor to answer to
+    * @param authActor authorization actor
+    * @param tablesActor table management actor
+    * @return props instance
+    */
   def props(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef) =
     Props(new LobbyClientActor(out, authActor, tablesActor))
 }

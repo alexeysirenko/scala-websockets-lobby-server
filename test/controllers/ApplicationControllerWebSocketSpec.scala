@@ -11,7 +11,7 @@ import play.api.test.Helpers._
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class ApplicationControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class ApplicationControllerWebSocketSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
   "HomeController GET" should {
 
