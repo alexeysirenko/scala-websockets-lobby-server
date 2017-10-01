@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props, Status}
 import akka.event.Logging
-import msg._
+import messages._
 import play.api.libs.json.JsValue
 
 import scala.util.{Failure, Success}

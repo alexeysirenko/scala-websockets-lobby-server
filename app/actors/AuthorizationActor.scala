@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import models.User
-import msg.{Login, LoginFailed, LoginSuccessful}
+import messages.{Login, LoginFailed, LoginSuccessful}
 
 class AuthorizationActor extends Actor {
 

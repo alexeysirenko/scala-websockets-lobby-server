@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import models.Table
-import msg._
+import messages._
 
 class TablesActor extends Actor {
 
