@@ -7,8 +7,8 @@ import msg.{Login, LoginFailed, LoginSuccessful}
 class AuthorizationActor extends Actor {
 
   protected val users = List(
-    User("user1234", "password1234", "user"),
-    User("administrator", "password42", "admin")
+    User("user1234", "password1234", "admin"),
+    User("user5678", "password5678", "user")
   )
 
   override def receive = {

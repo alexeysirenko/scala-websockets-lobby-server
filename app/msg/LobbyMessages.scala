@@ -45,13 +45,8 @@ object LoginFailed {
 
 object LoginSuccessful {
   val msgType = "login_successful"
-  implicit val format: OFormat[LoginSuccessful] = Json.format[LoginSuccessful]
-  implicit val reads: Reads[LoginSuccessful] = (__ \ "user_type").read[String].map { userType =>
-    LoginSuccessful(userType)
-  }
-  implicit val writes: Writes[LoginSuccessful] = (__ \ "user_type").write[String].contramap {
-    (message: LoginSuccessful) => message.userType
-  }
+  implicit val format: Format[LoginSuccessful] =
+    (__ \ "user_type").format[String].inmap(name => LoginSuccessful(name), (ls: LoginSuccessful) => ls.userType)
 }
 
 object Ping {
