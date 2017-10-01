@@ -28,48 +28,43 @@ class LobbyClientActor(out: ActorRef, authActor: ActorRef, tablesActor: ActorRef
       case Success(lobbyMessage) =>
         lobbyMessage match {
           case login: Login => authActor ! login
-          case Ping(seq) => out ! Pong(seq).toJson
+          case Ping(seq) => respondToClient(Pong(seq))
           case SubscribeTables => tablesActor ! SubscribeTables
           case UnsubscribeTables => tablesActor ! UnsubscribeTables
-          case msg: SecuredLobbyMessage => receiveSecuredMessage(msg)
+          case msg: SecuredLobbyMessage => receiveSecuredLobbyMessage(msg)
           case _ => unhandled()
         }
       case Failure(e) => out ! Status.Failure(e)
     }
   }
 
-  private def receiveLobbyMessage(msg: LobbyMessage): Unit = {
-    msg match {
+  private def receiveLobbyMessage(message: LobbyMessage): Unit = {
+    message match {
       case msg: LoginSuccessful =>
         userType = Option(msg.userType)
-        out ! msg.toJson
-      case msg: LoginFailed => out ! msg.toJson
-      case msg: TableList => out ! msg.toJson
-      case msg: TableAdded => out ! msg.toJson
-      case msg: TableUpdated => out ! msg.toJson
-      case msg: TableRemoved => out ! msg.toJson
-      case msg: TableUpdateFailed => out ! msg.toJson
-      case msg: TableRemoveFailed => out ! msg.toJson
-      case _ => unhandled()
+        respondToClient(msg)
+      case msg => respondToClient(msg)
     }
   }
 
-  private def receiveSecuredMessage(msg: SecuredLobbyMessage): Unit = {
+  private def receiveSecuredLobbyMessage(msg: SecuredLobbyMessage): Unit = {
     if (isAdmin) {
       msg match {
         case _: AddTable => tablesActor ! msg
         case msg @ UpdateTable(table) =>
-          out ! TableUpdated(table).toJson
+          respondToClient(TableUpdated(table))
           tablesActor ! msg
         case msg @ RemoveTable(id) =>
-          out ! TableRemoved(id).toJson
+          respondToClient(TableRemoved(id))
           tablesActor ! msg
         case _ => unhandled()
       }
     } else {
-      out ! NotAuthorized.toJson
+      respondToClient(NotAuthorized)
     }
   }
+
+  private def respondToClient(message: LobbyMessage): Unit = out ! message.toJson
 
   private def isAdmin = userType.contains("admin")
 
