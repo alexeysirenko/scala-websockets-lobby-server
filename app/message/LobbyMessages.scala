@@ -10,7 +10,7 @@ trait SecuredLobbyMessage extends LobbyMessage
 object LobbyMessage {
   val TYPE_FIELD = "$type"
 
-  def getTypeField(json: JsValue): String = (json \ "$type").as[String]
+  def getTypeField(json: JsValue): String = (json \ TYPE_FIELD).as[String]
 
   implicit class TypedLobbyMessage(message: LobbyMessage) {
     def toJson: JsValue = LobbyMessage.formatWithTypeField(message)
