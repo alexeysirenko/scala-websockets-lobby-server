@@ -11,23 +11,20 @@ case class LoginFailed(reason: String) extends LobbyMessage
 case class LoginSuccessful(userType: String) extends LobbyMessage
 case class Ping(seq: Int) extends LobbyMessage
 case class Pong(seq: Int) extends LobbyMessage
+case object SubscribeTables extends LobbyMessage {
+  val msgType = "subscribe_tables"
+}
+case class TableList(table: List[TableList.Table]) extends LobbyMessage
+case object UnsubscribeTables extends LobbyMessage {
+  val msgType = "unsubscribe_tables"
+}
+case object NotAuthorized extends LobbyMessage {
+  val msgType = "not_authorized"
+}
 
 object Login {
-
   val msgType = "login"
-
   implicit val format: OFormat[Login] = Json.format[Login]
-
-  /*implicit val reads: Reads[Login] = (
-    (JsPath \ "username").read[String] and
-    (JsPath \ "password").read[String]
-  )(Login.apply _)
-
-  implicit val writes: Writes[Login] = (
-    (JsPath \ "username").write[String] and
-    (JsPath \ "password").write[String]
-  )(unlift(Login.unapply))*/
-
 }
 
 object LoginFailed {
@@ -45,13 +42,10 @@ object LoginFailed {
 
 object LoginSuccessful {
   val msgType = "login_successful"
-
   implicit val format: OFormat[LoginSuccessful] = Json.format[LoginSuccessful]
-
   implicit val reads: Reads[LoginSuccessful] = (__ \ "user_type").read[String].map { userType =>
     LoginSuccessful(userType)
   }
-
   implicit val writes: Writes[LoginSuccessful] = (__ \ "user_type").write[String].contramap {
     (message: LoginSuccessful) => message.userType
   }
@@ -67,13 +61,21 @@ object Pong {
   implicit val format: OFormat[Pong] = Json.format[Pong]
 }
 
+object TableList {
+  val msgType = "table_list"
+  implicit val format: OFormat[TableList] = Json.format[TableList]
+  case class Table(id: Int, name: String, participants: Int)
+  object Table {
+    implicit val tableFormat: OFormat[Table] = Json.format[Table]
+  }
+}
+
 object LobbyMessage {
+  private val TYPE_FIELD = "$type"
 
   implicit class TypedLobbyMessage(message: LobbyMessage) {
     def toJson: JsValue = LobbyMessage.formatWithTypeField(message)
   }
-
-  private val TYPE_FIELD = "$type"
 
   def parseTypeField(json: JsValue): Try[LobbyMessage] = Try {
     (json \ TYPE_FIELD).as[String] match {
@@ -82,6 +84,9 @@ object LobbyMessage {
       case LoginSuccessful.msgType => json.as[LoginSuccessful]
       case Ping.msgType => json.as[Ping]
       case Pong.msgType => json.as[Pong]
+      case SubscribeTables.msgType => SubscribeTables
+      case UnsubscribeTables.msgType => UnsubscribeTables
+      case TableList.msgType => json.as[TableList]
       case any => throw new Error(s"Unknown message type '$any'")
     }
   }
@@ -92,6 +97,9 @@ object LobbyMessage {
     case msg: LoginSuccessful => Json.obj(TYPE_FIELD -> LoginSuccessful.msgType) ++ Json.toJson(msg).as[JsObject]
     case msg: Ping => Json.obj(TYPE_FIELD -> Ping.msgType) ++ Json.toJson(msg).as[JsObject]
     case msg: Pong => Json.obj(TYPE_FIELD -> Pong.msgType) ++ Json.toJson(msg).as[JsObject]
+    case SubscribeTables => Json.obj(TYPE_FIELD -> SubscribeTables.msgType)
+    case UnsubscribeTables => Json.obj(TYPE_FIELD -> UnsubscribeTables.msgType)
+    case msg: TableList => Json.obj(TYPE_FIELD -> TableList.msgType) ++ Json.toJson(msg).as[JsObject]
   }
 
   /*implicit val format: OFormat[LobbyMessage] = Json.format[LobbyMessage]
