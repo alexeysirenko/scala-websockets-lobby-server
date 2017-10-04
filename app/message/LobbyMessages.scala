@@ -33,7 +33,7 @@ object LobbyMessage {
   def parseTypeField(json: JsValue): Try[LobbyMessage] = Try {
     parseFunctions.flatMap(f => f.lift(json)).headOption match {
       case Some(lobbyMessage) => lobbyMessage
-      case None => throw new Error(s"Unknown message type '${json.as[String]}'")
+      case None => throw new Error(s"Unknown message type '$json'")
     }
   }
 
