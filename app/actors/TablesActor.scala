@@ -53,7 +53,8 @@ class TablesActor extends Actor {
     * @param table to add
     */
   private def addTable(table: Table): Unit = {
-    val newTable =  table.withId(tables.size + 1)
+    val nextId = tables.keys.max + 1
+    val newTable =  table.withId(nextId)
     tables.put(newTable.id.get, newTable)
     sender ! TableAdded(table)
     subscribers foreach { subscriber =>
